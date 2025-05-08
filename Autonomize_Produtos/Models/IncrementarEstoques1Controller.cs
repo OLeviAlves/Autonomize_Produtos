@@ -1,0 +1,162 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+
+namespace Autonomize_Produtos.Models
+{
+    public class IncrementarEstoques1Controller : Controller
+    {
+        private readonly AppDbContext _context;
+
+        public IncrementarEstoques1Controller(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET: IncrementarEstoques1
+        public async Task<IActionResult> Index()
+        {
+            var appDbContext = _context.IncrementarEstoque.Include(i => i.Produto);
+            return View(await appDbContext.ToListAsync());
+        }
+
+        // GET: IncrementarEstoques1/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var incrementarEstoque = await _context.IncrementarEstoque
+                .Include(i => i.Produto)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (incrementarEstoque == null)
+            {
+                return NotFound();
+            }
+
+            return View(incrementarEstoque);
+        }
+
+        // GET: IncrementarEstoques1/Create
+        public IActionResult Create()
+        {
+            ViewData["ProdutoId"] = new SelectList(_context.Produtos, "Id", "Nome");
+            return View();
+        }
+
+        // POST: IncrementarEstoques1/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,Quantidade,ProdutoId,Operacao")] IncrementarEstoque incrementarEstoque)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(incrementarEstoque);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["ProdutoId"] = new SelectList(_context.Produtos, "Id", "Nome", incrementarEstoque.ProdutoId);
+            return View(incrementarEstoque);
+        }
+
+        // GET: IncrementarEstoques1/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var incrementarEstoque = await _context.IncrementarEstoque.FindAsync(id);
+            if (incrementarEstoque == null)
+            {
+                return NotFound();
+            }
+            ViewData["ProdutoId"] = new SelectList(_context.Produtos, "Id", "Nome", incrementarEstoque.ProdutoId);
+            return View(incrementarEstoque);
+        }
+
+        // POST: IncrementarEstoques1/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Quantidade,ProdutoId,Operacao")] IncrementarEstoque incrementarEstoque)
+        {
+            if (id != incrementarEstoque.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(incrementarEstoque);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!IncrementarEstoqueExists(incrementarEstoque.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["ProdutoId"] = new SelectList(_context.Produtos, "Id", "Nome", incrementarEstoque.ProdutoId);
+            return View(incrementarEstoque);
+        }
+
+        // GET: IncrementarEstoques1/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var incrementarEstoque = await _context.IncrementarEstoque
+                .Include(i => i.Produto)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (incrementarEstoque == null)
+            {
+                return NotFound();
+            }
+
+            return View(incrementarEstoque);
+        }
+
+        // POST: IncrementarEstoques1/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var incrementarEstoque = await _context.IncrementarEstoque.FindAsync(id);
+            if (incrementarEstoque != null)
+            {
+                _context.IncrementarEstoque.Remove(incrementarEstoque);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool IncrementarEstoqueExists(int id)
+        {
+            return _context.IncrementarEstoque.Any(e => e.Id == id);
+        }
+    }
+}
